@@ -73,10 +73,10 @@ class ProductReview:
         return FAISS.from_texts(chunks, embeddings)   
     
     def _analyze_text(self, relevant_text, state, ground_query):
-        #client = openai.OpenAI(api_key=openai_key)
+   
         llm = ChatOpenAI(
             model="gpt-3.5-turbo",
-            temperature=0.3,
+            temperature=0,
             openai_api_key=self.openai_key  # Pass key directly or use environment variable
         )
         if state == "social_media":
@@ -221,7 +221,7 @@ class ProductReview:
         # retreiving relevant chunks
         #using lightweight BM25 pre-filter
         bm25_retriever = BM25Retriever.from_texts(full_texts)
-        top_k_docs = bm25_retriever.get_relevant_documents(self.query, k=1000)
+        top_k_docs = bm25_retriever.get_relevant_documents(self.query, k=3000)
         reduced_corpus = [doc.page_content for doc in top_k_docs]
         print("--------------------------------------------------------------------------------------------------------------------")
         print("First layer BM25 Retriever Corpus Reduction Complete")
@@ -232,7 +232,7 @@ class ProductReview:
         faiss_retriever = index.as_retriever()
         ensemble_retriever = EnsembleRetriever(
             retrievers=[bm25_retriever, faiss_retriever], 
-            weights=[0.3,0.7]
+            weights=[0.5,0.5]
         )
         
         relevant_docs = ensemble_retriever.get_relevant_documents(self.sub_query)
